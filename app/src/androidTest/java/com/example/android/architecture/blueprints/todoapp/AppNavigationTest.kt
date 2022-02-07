@@ -24,7 +24,9 @@ import androidx.test.core.app.ApplicationProvider.getApplicationContext
 import androidx.test.espresso.Espresso.onView
 import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.IdlingRegistry
+import androidx.test.espresso.action.ViewActions
 import androidx.test.espresso.action.ViewActions.click
+import androidx.test.espresso.assertion.ViewAssertions
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.contrib.DrawerMatchers.isClosed
 import androidx.test.espresso.contrib.DrawerMatchers.isOpen
@@ -36,6 +38,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.data.source.TasksRepository
+import com.example.android.architecture.blueprints.todoapp.pages.*
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksActivity
 import com.example.android.architecture.blueprints.todoapp.util.DataBindingIdlingResource
 import com.example.android.architecture.blueprints.todoapp.util.EspressoIdlingResource
@@ -148,6 +151,56 @@ class AppNavigationTest {
             )
         ).perform(click())
         onView(withId(R.id.tasks_container_layout)).check(matches(isDisplayed()))
+
+        // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
+    }
+
+    @Test
+    fun createNewTask()  {
+        // Start up Tasks screen
+        val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        val testTask= Task("title", "description")
+        Page.on<TasksPage>()
+            .tapOnAddButton()
+            .on<AddTaskPage>()
+            .addTask(testTask)
+            .on<TasksPage>()
+            .checkAddedTask(testTask)
+
+        // When using ActivityScenario.launch, always call close()
+        activityScenario.close()
+    }
+
+    @Test
+    fun createNewTaskWithoutPageObject(){
+        val activityScenario = ActivityScenario.launch(TasksActivity::class.java)
+        dataBindingIdlingResource.monitorActivity(activityScenario)
+        val task= Task("title", "description")
+
+        //check tasks page open
+        onView(withId(R.id.tasks_container_layout))
+            .check(matches(isDisplayed()))
+        onView(withId(R.id.add_task_fab)).perform(ViewActions.click()) //tap on add button
+
+        //check task page is open
+        onView(withId(R.id.add_task_title_edit_text))
+            .check(ViewAssertions.matches(isDisplayed()))
+
+        //add task
+        onView(withId(R.id.add_task_title_edit_text))
+            .perform(ViewActions.clearText(), ViewActions.typeText(task.title))
+        onView(withId(R.id.add_task_description_edit_text))
+            .perform(ViewActions.clearText(), ViewActions.typeText(task.description))
+        onView(withId(R.id.save_task_fab)).perform(click())
+
+        //check task page is open
+        onView(withId(R.id.tasks_container_layout))
+            .check(matches(isDisplayed()))
+
+        //check added task
+        onView(withText(task.title))
 
         // When using ActivityScenario.launch, always call close()
         activityScenario.close()

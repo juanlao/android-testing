@@ -101,4 +101,6 @@ dependencies {
     // Kotlin
     implementation "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$kotlinVersion"
     implementation "androidx.fragment:fragment-ktx:$fragmentVersion"
+
+    implementation "org.jetbrains.kotlin:kotlin-reflect:$kotlinVersion"
 }
